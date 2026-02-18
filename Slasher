@@ -1,0 +1,97 @@
+local spawner = loadstring(game:HttpGet("https://raw.githubusercontent.com/RegularVynixu/Utilities/main/Doors/Entity%20Spawner/V2/Source.lua"))()
+
+local Lighting = game:GetService("Lighting")
+
+local cc = Lighting:FindFirstChild("MainColorCorrection")
+if not cc then
+    cc = Instance.new("ColorCorrectionEffect")
+    cc.Name = "MainColorCorrection"
+    cc.Parent = Lighting
+end
+
+-- Server script: play a sound for all players
+-- Put this Script in ServerScriptService or Workspace
+
+local SOUND_ID = "rbxassetid://127262319266254" -- replace with the actual sound asset id
+
+local sound = Instance.new("Sound")
+sound.Name = "GlobalOneShot"
+sound.SoundId = SOUND_ID
+sound.Volume = 4             -- volume set to 4
+sound.Looped = false
+sound.PlaybackSpeed = 1
+sound.RollOffMode = Enum.RollOffMode.InverseTapered -- optional
+sound.Parent = workspace     -- parent in workspace so it's audible globally
+
+sound:Play()
+
+sound.Ended:Connect(function()
+    sound:Destroy()
+end)
+
+cc.TintColor = Color3.fromRGB(250,150,122)
+cc.Contrast = 1
+
+game.Lighting.MainColorCorrection.Contrast = 1
+
+local tween = game:GetService("TweenService")
+tween:Create(game.Lighting.MainColorCorrection, TweenInfo.new(2.5), {Contrast = 0}):Play()
+tween:Create(game.Lighting.MainColorCorrection, TweenInfo.new(80), {TintColor = Color3.fromRGB(255,255,255)}):Play()
+
+local entity = spawner.Create({
+ Entity = {
+  Name = "slasher",
+  Asset = "rbxassetid://78352989799636",
+  HeightOffset = 0
+ },
+ Lights = {
+  Flicker = {
+   Enabled = true,
+   Duration = 1.5
+  },
+  Shatter = true,
+  Repair = false
+ },
+ CameraShake = {
+  Enabled = true,
+  Range = 100,
+  Values = {2, 25, 0.1, 1}
+ },
+ Movement = {
+  Speed = 40,
+  Delay = 2,
+  Reversed = false
+ },
+ Rebounding = {
+  Enabled = false,
+  Type = "Ambush",
+  Min = 1,
+  Max = 1,
+  Delay = 2
+ },
+ Damage = {
+  Enabled = true,
+  Range = 20,
+  Amount = 9999
+ },
+ Crucifixion = {
+  Enabled = false,
+  Range = 40,
+  Resist = false,
+  Break = true
+ },
+ Death = {
+  Type = "Guiding",
+  Hints = {"your die to slasher "},
+  
+  Cause = "slasher"
+ }
+})
+
+entity:SetCallback("OnDamagePlayer", function(newHealth)
+ local ReSt = game.ReplicatedStorage
+ local Plr = game.Players.LocalPlayer
+ ReSt.GameStats["Player_"..Plr.Name].Total.DeathCause.Value = "slasher"
+end)
+
+entity:Run()
